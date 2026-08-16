@@ -12,7 +12,39 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+enum Role {
+  UTILISATEUR
+  ADMINISTRATEUR
+}
 
+enum ProfileVisibility {
+  PUBLIC
+  GROUPES_SEULEMENT
+  PRIVE
+}
+
+enum ContactLevel {
+  PERSONNE
+  MEMBRES_DE_MES_GROUPES
+  TOUT_LE_MONDE
+}
+
+enum GroupVisibility {
+  PUBLIC
+  PRIVE
+}
+
+enum MemberStatus {
+  EN_ATTENTE
+  ACCEPTEE
+  REFUSEE
+}
+
+enum ReportCategory {
+  INAPPROPRIE
+  SPAM
+  INQUIETANT
+}
 model User {
   id                Int               @id @default(autoincrement())
   email             String            @unique
@@ -36,8 +68,186 @@ model User {
   comments         Comment[]
   sentMessages     Message[]      @relation("MessagesEnvoyes")
   receivedMessages Message[]      @relation("MessagesRecus")
-  blocksMade       Block[]        @relation("BlocksEmis")
-  blocksReceived   Block[]        @relation("BlocksRecus")
   reports          Report[]
   refreshTokens    RefreshToken[]
+}
+model JournalEntry {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  date       DateTime
+  humeur     Int
+  energie    Int
+  sommeil    Int
+  anxiete    Int
+  evenements String?
+  gratitude  String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  activities JournalActivity[]
+
+  @@unique([userId, date])
+}
+
+model Activity {
+  id        Int      @id @default(autoincrement())
+  nom       String   @unique
+  icone     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  journalEntries JournalActivity[]
+}
+
+model JournalActivity {
+  journalEntryId Int
+  activityId     Int
+
+  journalEntry JournalEntry @relation(fields: [journalEntryId], references: [id], onDelete: Cascade)
+  activity     Activity     @relation(fields: [activityId], references: [id], onDelete: Cascade)
+
+  @@id([journalEntryId, activityId])
+}
+
+model Resource {
+  id             Int      @id @default(autoincrement())
+  titre          String
+  description    String
+  contenu        String?
+  lienExterne    String?
+  categorie      String
+  type           String
+  dureeMinutes   Int
+  niveau         String
+  isOfficielle   Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  favorites Favorite[]
+
+  @@index([categorie])
+}
+
+model Favorite {
+  userId     Int
+  resourceId Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resource Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, resourceId])
+}
+
+model Group {
+  id          Int             @id @default(autoincrement())
+  nom         String
+  thematique  String
+  description String
+  regles      String
+  visibility  GroupVisibility @default(PUBLIC)
+  createurId  Int
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  createur User          @relation("GroupesCrees", fields: [createurId], references: [id], onDelete: Cascade)
+  members  GroupMember[]
+  posts    Post[]
+}
+
+model GroupMember {
+  userId              Int
+  groupId             Int
+  isModerateur        Boolean      @default(false)
+  status              MemberStatus @default(EN_ATTENTE)
+  messagePresentation String?
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, groupId])
+}
+
+model Post {
+  id        Int      @id @default(autoincrement())
+  groupId   Int
+  authorId  Int?
+  contenu   String
+  isHidden  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  group    Group     @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  author   User?     @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  comments Comment[]
+  reports  Report[]
+
+  // Sert à récupérer rapidement les publications récentes d'un groupe
+  @@index([groupId, createdAt])
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  postId    Int
+  authorId  Int?
+  contenu   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  post    Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author  User?    @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  reports Report[]
+}
+
+model Message {
+  id         Int      @id @default(autoincrement())
+  senderId   Int
+  receiverId Int
+  contenu    String
+  isRead     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  sender   User @relation("MessagesEnvoyes", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User @relation("MessagesRecus", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  // Sert à récupérer rapidement une conversation entre deux utilisateurs
+  @@index([senderId, receiverId, createdAt])
+}
+
+model Report {
+  id         Int            @id @default(autoincrement())
+  reporterId Int
+  category   ReportCategory
+  motif      String?
+  status     String         @default("EN_ATTENTE")
+  postId     Int?
+  commentId  Int?
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+
+  reporter User     @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+  post     Post?    @relation(fields: [postId], references: [id], onDelete: SetNull)
+  comment  Comment? @relation(fields: [commentId], references: [id], onDelete: SetNull)
+
+  @@unique([reporterId, postId])
+  @@unique([reporterId, commentId])
+
+  // Sert à afficher rapidement les signalements par catégorie et par date
+  @@index([category, createdAt])
+}
+
+model RefreshToken {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
