@@ -1,4 +1,5 @@
 import { useState } from "react";
+import api from "../api/axios";
 
 type JournalForm = {
   humeur: number;
@@ -32,11 +33,26 @@ export default function JournalPage() {
     }));
   }
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  event.preventDefault();
 
-    setMessage("Entrée enregistrée localement pour le moment.");
+  setMessage("");
+
+  try {
+    await api.post("/journal", {
+      humeur: form.humeur,
+      energie: form.energie,
+      sommeil: form.sommeil,
+      anxiete: form.anxiete,
+      evenements: form.evenements,
+      gratitude: form.gratitude,
+    });
+
+    setMessage("Entrée enregistrée avec succès.");
+  } catch {
+    setMessage("Impossible d’enregistrer l’entrée.");
   }
+}
 
   return (
     <div>
