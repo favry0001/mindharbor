@@ -1,68 +1,150 @@
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import api from "../api/axios";
 
-const groups = [
-  {
-    id: 1,
-    nom: "Gestion du stress",
-    thematique: "Stress",
-    description: "Un espace pour partager des stratégies et expériences.",
-    membres: 24,
-    prive: false,
-  },
-  {
-    id: 2,
-    nom: "Sommeil et habitudes",
-    thematique: "Sommeil",
-    description: "Échanger autour des routines, difficultés et progrès.",
-    membres: 17,
-    prive: false,
-  },
-  {
-    id: 3,
-    nom: "Parler sans jugement",
-    thematique: "Soutien",
-    description: "Un groupe privé pour échanger dans un cadre bienveillant.",
-    membres: 12,
-    prive: true,
-  },
-];
+type Post = {
+  id: number;
+  contenu: string;
+  author?: {
+    pseudonyme: string;
+  };
+  createdAt: string;
+};
 
-export default function GroupsPage() {
+type GroupDetails = {
+  id: number;
+  nom: string;
+  thematique: string;
+  description: string;
+  visibility: "PUBLIC" | "PRIVE";
+  posts: Post[];
+};
+
+export default function GroupDetailsPage() {
+  const { id } = useParams();
+
+  const [group, setGroup] = useState<GroupDetails | null>(null);
+  const [contenu, setContenu] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    async function loadGroup() {
+      try {
+        const response = await api.get<GroupDetails>(`/groups/${id}`);
+        setGroup(response.data);
+      } catch {
+        setError("Impossible de charger le groupe.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadGroup();
+  }, [id]);
+
+  async function handlePost() {
+    if (!contenu.trim()) {
+      return;
+    }
+
+    try {
+      const response = await api.post<Post>(`/groups/${id}/posts`, {
+        contenu,
+      });
+
+      if (group) {
+        setGroup({
+          ...group,
+          posts: [response.data, ...group.posts],
+        });
+      }
+
+      setContenu("");
+    } catch {
+      setError("Impossible de publier le message.");
+    }
+  }
+
+  if (loading) {
+    return <p>Chargement du groupe...</p>;
+  }
+
+  if (error) {
+    return <p className="error-message">{error}</p>;
+  }
+
+  if (!group) {
+    return <p>Groupe introuvable.</p>;
+  }
+
   return (
     <div>
       <section className="page-header">
         <div>
-          <p className="eyebrow">Communauté</p>
-          <h1>Groupes de soutien</h1>
-          <p className="page-description">
-            Rejoins des espaces d’échange selon les sujets qui t’intéressent.
-          </p>
+          <p className="eyebrow">{group.thematique}</p>
+          <h1>{group.nom}</h1>
+          <p className="page-description">{group.description}</p>
         </div>
       </section>
 
-      <section className="groups-grid">
-        {groups.map((group) => (
-          <article className="card group-card" key={group.id}>
-            <div className="group-card-header">
-              <span className="resource-category">{group.thematique}</span>
-              <span className="group-visibility">
-                {group.prive ? "Privé" : "Public"}
-              </span>
-            </div>
+      <section className="group-detail-grid">
+        <div>
+          <article className="card post-form-card">
+            <h2>Nouvelle publication</h2>
 
-            <h2>{group.nom}</h2>
+            <textarea
+              rows={4}
+              value={contenu}
+              onChange={(event) => setContenu(event.target.value)}
+              placeholder="Partage quelque chose avec le groupe..."
+            />
 
-            <p>{group.description}</p>
-
-            <div className="group-footer">
-              <span>{group.membres} membres</span>
-
-              <Link to={`/groups/${group.id}`} className="text-link">
-                Voir le groupe
-              </Link>
-            </div>
+            <button
+              className="primary-button"
+              type="button"
+              onClick={handlePost}
+            >
+              Publier
+            </button>
           </article>
-        ))}
+
+          {group.posts.length === 0 && (
+            <article className="card">
+              <p>Aucune publication pour le moment.</p>
+            </article>
+          )}
+
+          {group.posts.map((post) => (
+            <article className="card group-post" key={post.id}>
+              <div className="post-header">
+                <strong>{post.author?.pseudonyme ?? "Utilisateur"}</strong>
+                <span>
+                  {new Date(post.createdAt).toLocaleDateString()}
+                </span>
+              </div>
+
+              <p>{post.contenu}</p>
+
+              <button type="button" className="favorite-button">
+                Commenter
+              </button>
+            </article>
+          ))}
+        </div>
+
+        <aside className="card group-info">
+          <h2>À propos</h2>
+
+          <p>{group.description}</p>
+
+          <p>
+            Visibilité :{" "}
+            <strong>
+              {group.visibility === "PRIVE" ? "Privé" : "Public"}
+            </strong>
+          </p>
+        </aside>
       </section>
     </div>
   );
