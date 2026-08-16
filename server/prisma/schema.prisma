@@ -12,3 +12,32 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id                Int               @id @default(autoincrement())
+  email             String            @unique
+  password          String
+  pseudonyme        String
+  nomReel           String?
+  avatarUrl         String?
+  bio               String?
+  role              Role              @default(UTILISATEUR)
+  profileVisibility ProfileVisibility @default(PUBLIC)
+  contactLevel      ContactLevel      @default(TOUT_LE_MONDE)
+  isSuspended       Boolean           @default(false)
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  journalEntries   JournalEntry[]
+  favorites        Favorite[]
+  memberships      GroupMember[]
+  groupesCrees     Group[]        @relation("GroupesCrees")
+  posts            Post[]
+  comments         Comment[]
+  sentMessages     Message[]      @relation("MessagesEnvoyes")
+  receivedMessages Message[]      @relation("MessagesRecus")
+  blocksMade       Block[]        @relation("BlocksEmis")
+  blocksReceived   Block[]        @relation("BlocksRecus")
+  reports          Report[]
+  refreshTokens    RefreshToken[]
+}
