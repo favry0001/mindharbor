@@ -1,17 +1,23 @@
 import { Link } from "react-router-dom";
-import Logo from "../components/Logo";
 
 export default function HomePage() {
   return (
     <main className="home-page">
       <header className="home-header">
-        <Logo />
+        <Link to="/" className="logo">
+          <span className="logo-mark">MH</span>
 
-        <div className="home-nav">
+          <span className="logo-text">
+            <span className="logo-title">MindHarbor</span>
+            <span className="logo-subtitle">bien-être et soutien</span>
+          </span>
+        </Link>
+
+        <nav className="home-nav">
           <Link to="/resources">Ressources</Link>
           <Link to="/groups">Groupes</Link>
           <Link to="/login">Connexion</Link>
-        </div>
+        </nav>
       </header>
 
       <section className="home-hero">
@@ -26,8 +32,8 @@ export default function HomePage() {
 
           <p className="home-description">
             MindHarbor t’aide à suivre ton bien-être, comprendre tes tendances,
-            découvrir des ressources utiles et échanger dans des groupes de
-            soutien.
+            découvrir des ressources utiles et trouver des groupes de soutien
+            adaptés à tes besoins.
           </p>
 
           <div className="home-actions">
@@ -35,7 +41,10 @@ export default function HomePage() {
               Créer un compte
             </Link>
 
-            <Link to="/login" className="secondary-button-link home-button">
+            <Link
+              to="/login"
+              className="secondary-button-link home-button"
+            >
               Se connecter
             </Link>
           </div>
@@ -55,36 +64,33 @@ export default function HomePage() {
               <span>😊</span>
             </div>
           </div>
-
-          <div className="floating-card floating-card-one">
-            <span>📖</span>
-            <strong>Journal quotidien</strong>
-          </div>
-
-          <div className="floating-card floating-card-two">
-            <span>📈</span>
-            <strong>Suivre tes tendances</strong>
-          </div>
         </div>
       </section>
 
       <section className="home-features">
         <article>
           <span>📝</span>
-          <h3>Journal</h3>
-          <p>Note ton humeur, ton énergie, ton sommeil et tes ressentis.</p>
+          <h3>Journal quotidien</h3>
+          <p>
+            Suis ton humeur, ton énergie, ton sommeil et ton anxiété.
+          </p>
         </article>
 
         <article>
           <span>📊</span>
           <h3>Tendances</h3>
-          <p>Observe ton évolution et comprends mieux ton quotidien.</p>
+          <p>
+            Observe ton évolution au fil des jours et comprends mieux ton
+            quotidien.
+          </p>
         </article>
 
         <article>
           <span>🤝</span>
           <h3>Soutien</h3>
-          <p>Découvre des ressources et des groupes adaptés à tes besoins.</p>
+          <p>
+            Accède à des ressources utiles et à des groupes de soutien.
+          </p>
         </article>
       </section>
     </main>
