@@ -15,10 +15,10 @@
 
 ## 1. Dépôt GitHub
 
-- **URL (public) :** <https://github.com/xxx/yyy>
+- **URL (public) :** https://github.com/favry0001/mindharbor.git
 - **Commit final à corriger :** <hash complet du commit>
 - **Branche :** main
-- [ ] Vérifié en navigation privée : le dépôt est bien **PUBLIC**.
+- [x] Vérifié en navigation privée : le dépôt est bien **PUBLIC**.
 
 ---
 
@@ -26,8 +26,8 @@
 
 | # | Prénom | Nom | Courriel | Compte GitHub |
 |---|--------|-----|----------|---------------|
-| 1 | Maxance | Zeka    | <courriel> | maxance-devcode |
-| 2 | Fabiola | Sainvry | <courriel> | Favry0001 |
+| 1 | Maxance | Zeka    | zkmance@gmail.com  | maxance-devcode |
+| 2 | Fabiola | Sainvry | fsainvry@gmail.com | Favry0001       |
 
 
 **Capitaine :** <prénom nom>

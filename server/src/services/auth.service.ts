@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { prisma } from '../lib/prisma.js';
@@ -16,7 +17,8 @@ function signAccessToken(id: number, role: string) {
 }
 
 async function issueRefreshToken(userId: number) {
-  const token = jwt.sign({ id: userId }, REFRESH_SECRET);
+  const jti = crypto.randomUUID();
+  const token = jwt.sign({ id: userId, jti }, REFRESH_SECRET);
   const expiresAt = new Date(Date.now() + REFRESH_TTL_DAYS * 24 * 60 * 60 * 1000);
   await prisma.refreshToken.create({ data: { userId, token, expiresAt } });
   return token;
