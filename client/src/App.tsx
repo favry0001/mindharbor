@@ -3,7 +3,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Layout from "./components/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminRoute from "./components/AdminRoute";
-
+import EmergencyResources from "./components/EmergencyResources";
 
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
@@ -21,13 +21,15 @@ import AdminPage from "./pages/AdminPage";
 function App() {
   return (
     <BrowserRouter>
-      
+      <EmergencyResources />
 
       <Routes>
-        {/* Pages accessibles sans connexion */}
+        {/* Pages publiques */}
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/resources" element={<ResourcesPage />} />
+        <Route path="/groups" element={<GroupsPage />} />
 
         {/* Pages accessibles seulement si connecté */}
         <Route element={<ProtectedRoute />}>
@@ -35,8 +37,6 @@ function App() {
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/journal" element={<JournalPage />} />
             <Route path="/trends" element={<TrendsPage />} />
-            <Route path="/resources" element={<ResourcesPage />} />
-            <Route path="/groups" element={<GroupsPage />} />
             <Route path="/groups/:id" element={<GroupDetailsPage />} />
             <Route path="/messages" element={<MessagesPage />} />
             <Route path="/profile" element={<ProfilePage />} />
