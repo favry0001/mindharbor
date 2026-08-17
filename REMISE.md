@@ -38,10 +38,10 @@
 
 | Rôle | Courriel | Mot de passe | Particularité |
 |------|----------|--------------|---------------|
-| Administrateur | <courriel> | <mot de passe> | — |
+| Administrateur | admin@mindharbor.com | AdminPswd1! | rôle `ADMINISTRATEUR` |
 | Modérateur | <courriel> | <mot de passe> | modère le groupe <nom> |
-| Utilisateur | <courriel> | <mot de passe> | 30 jours de journal |
-| Utilisateur | <courriel> | <mot de passe> | profil privé |
+| Utilisateur |  lea@test.com | Test1234! | entrée de journal du jour saisie |
+| Utilisateur | marc@test.com | Test1234! | profil privé|
 
 ---
 
@@ -49,16 +49,18 @@
 
 ### Noyau obligatoire
 
-| Fonctionnalité | État | Remarque |
+ Fonctionnalité | État | Remarque |
 |----------------|------|----------|
-| Journal de bien-être | complet / partiel / absent | |
-| Analyse et tendances | | |
-| Ressources et favoris | | |
-| Groupes de soutien | | |
-| Messagerie et confidentialité | | |
-| Profils et visibilité | | |
-| Tableau de bord | | |
-| Administration | | |
+| Journal de bien-être | complet | création avec contrainte d'unicité userId, date testée ; lecture par date restreinte à l'auteur ; modification limitée au jour même |
+| Analyse et tendances | complet | `GET /journal/stats?range=30d`  et `GET /journal/insights` 
+| Ressources et favoris | absent | ; modèles Prisma déjà en base |
+| Groupes de soutien | absent |  ; modèles Prisma  déjà en base |
+| Messagerie et confidentialité | absent |  ; modèle Prisma (`Message`) déjà en base |
+| Profils et visibilité | partiel | champs `profileVisibility` et `contactLevel` présents et retournés par `/auth/me` ; aucune route pour les modifier après inscription |
+| Tableau de bord | |  côté frontend |
+| Administration | partiel | rôle `ADMINISTRATEUR` fonctionnel au niveau du modèle `User` et exploitable via le middleware `requireRole` ; aucune route `/admin/*` ou `/reports` implémentee |
+
+
 
 ### Extensions réalisées
 
@@ -78,12 +80,15 @@ initiative, et pourquoi ce choix sert les personnes qui utiliseront
 MindHarbor.>
 
 ---
+calculée automatiquement sur `/journal/insights` compare la première et la seconde moitié de la période de 30 jours pour détecter une tendance directionnelle amélioration ou dégradation de l'humeur, hausse de l'anxiété, ou sommeil insuffisant, plutôt que de se limiter à une moyenne statique.
+
+
 
 ## 6. Vérifications avant dépôt
 
-- [ ] `npx tsc --noEmit` passe sans erreur dans `server/` **et** dans `client/`
-- [ ] Le projet s'installe et démarre en suivant le README, sur une machine vierge
-- [ ] La base Neon est peuplée et restera accessible après la remise
-- [ ] Aucun fichier `.env` n'est commité ; les `.env.example` sont présents
+- [x] `npx tsc --noEmit` passe sans erreur dans `server/` **et** dans `client/`
+- [x] Le projet s'installe et démarre en suivant le README, sur une machine vierge
+- [x] La base Neon est peuplée et restera accessible après la remise
+- [ x] Aucun fichier `.env` n'est commité ; les `.env.example` sont présents
 - [ ] Le scénario de validation de l'énoncé a été déroulé en entier
-- [ ] Le dépôt est public et le lien ci-dessus fonctionne en navigation privée
+- [x] Le dépôt est public et le lien ci-dessus fonctionne en navigation privée
